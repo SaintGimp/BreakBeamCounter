@@ -5,7 +5,7 @@
 
 const int sensorPin = 3;
 const int displayButtonPin = 4;
-const boolean displayOnDemand = true;
+const boolean displayOnDemand = false;
 
 Bounce sensor = Bounce(sensorPin, 500);
 Bounce displayButton = Bounce(displayButtonPin, 50);
@@ -34,9 +34,7 @@ void setup()
 
 void loop()
 {
-  sensor.update();
-  
-  if (sensor.risingEdge())
+  if (sensor.update() && sensor.read() == HIGH)
   {
     counter++;
     
