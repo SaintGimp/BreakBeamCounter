@@ -5,14 +5,16 @@
 
 const int sensorPin = 3;
 const int displayButtonPin = 4;
-const boolean displayOnDemand = true;
-const int noiseFilterTime = 100;
+const int outputPin = 1;
+const int noiseFilterTime = 15;
 const int delayBetweenTriggers = 750;
 
 StableDebounce sensor = StableDebounce();
 StableDebounce displayButton = StableDebounce();
 Adafruit_7segment display = Adafruit_7segment();
+boolean displayOnDemand = true;
 unsigned long lastBeamResetTime = 0;
+unsigned long lastButtonPressTime = 0;
 
 int breakCounter = 0;
 
@@ -36,6 +38,8 @@ void setup()
   pinMode(displayButtonPin, INPUT_PULLUP);     
   displayButton.attach(displayButtonPin);
   displayButton.interval(50);
+  
+  pinMode(outputPin, OUTPUT);
 }
 
 void loop()
@@ -45,6 +49,10 @@ void loop()
     if (sensor.read() == HIGH && millis() - lastBeamResetTime > delayBetweenTriggers)
     {
       breakCounter++;
+      
+      digitalWrite(outputPin, HIGH);
+      delay(10);
+      digitalWrite(outputPin, LOW);
       
       if (!displayOnDemand)
       {
@@ -58,17 +66,26 @@ void loop()
     }      
   }
   
-  if (displayOnDemand && displayButton.update())
+  if (displayButton.update())
   {
-    if (displayButton.read() == LOW)
+    if (displayButton.read() == LOW && displayOnDemand)
     {
       display.print(breakCounter);
       display.writeDisplay();
+      lastButtonPressTime = millis();
     }
-    else
+    else if (displayButton.read() == HIGH)
     {
-      display.clear();
-      display.writeDisplay();
+      if (millis() > lastButtonPressTime + 6000)
+      {
+        displayOnDemand = !displayOnDemand;
+      }
+      
+      if (displayOnDemand)
+      {
+        display.clear();
+        display.writeDisplay();
+      }
     }
   }
 }
