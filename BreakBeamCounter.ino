@@ -6,10 +6,10 @@
 const int sensorPin = 3;
 const int displayButtonPin = 4;
 const int outputPin = 1;
-const int noiseFilterTime = 15;
+const int noiseFilterTime = 7;
 const int delayBetweenTriggers = 750;
 
-StableDebounce sensor = StableDebounce();
+ThresholdDebounce sensor = ThresholdDebounce();
 StableDebounce displayButton = StableDebounce();
 Adafruit_7segment display = Adafruit_7segment();
 boolean displayOnDemand = true;
@@ -34,6 +34,7 @@ void setup()
   pinMode(sensorPin, INPUT);
   sensor.attach(sensorPin);
   sensor.interval(noiseFilterTime);
+  sensor.threshold(0.20);
   
   pinMode(displayButtonPin, INPUT_PULLUP);     
   displayButton.attach(displayButtonPin);
